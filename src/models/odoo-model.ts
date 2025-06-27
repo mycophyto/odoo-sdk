@@ -1,15 +1,14 @@
-import { XMLRPCClient } from '../client/xmlrpc';
 import { OdooAuthentication } from '../auth/authentication';
+import { XMLRPCClient } from '../client/xmlrpc';
 import {
-  OdooResponse,
-  OdooModel,
   OdooCreateResult,
-  OdooUpdateResult,
   OdooDeleteResult,
-  OdooSearchDomain,
-  OdooSearchOptions,
+  OdooDomain,
   OdooFieldInfo,
-  OdooDomain
+  OdooModel,
+  OdooResponse,
+  OdooSearchOptions,
+  OdooUpdateResult
 } from '../types';
 
 export class OdooModelClient {
@@ -43,7 +42,7 @@ export class OdooModelClient {
         args: [
           config.database,
           this.auth.getUserId(),
-          config.password,
+          config.apiKey,
           this.modelName,
           'create',
           [data]
@@ -82,7 +81,7 @@ export class OdooModelClient {
         args: [
           config.database,
           this.auth.getUserId(),
-          config.password,
+          config.apiKey,
           this.modelName,
           'read',
           [ids],
@@ -115,7 +114,7 @@ export class OdooModelClient {
         args: [
           config.database,
           this.auth.getUserId(),
-          config.password,
+          config.apiKey,
           this.modelName,
           'write',
           [ids, data]
@@ -154,7 +153,7 @@ export class OdooModelClient {
         args: [
           config.database,
           this.auth.getUserId(),
-          config.password,
+          config.apiKey,
           this.modelName,
           'unlink',
           [ids]
@@ -200,7 +199,7 @@ export class OdooModelClient {
         args: [
           config.database,
           this.auth.getUserId(),
-          config.password,
+          config.apiKey,
           this.modelName,
           'search',
           [domain],
@@ -244,7 +243,7 @@ export class OdooModelClient {
         args: [
           config.database,
           this.auth.getUserId(),
-          config.password,
+          config.apiKey,
           this.modelName,
           'search_read',
           [domain],
@@ -277,7 +276,7 @@ export class OdooModelClient {
         args: [
           config.database,
           this.auth.getUserId(),
-          config.password,
+          config.apiKey,
           this.modelName,
           'search_count',
           [domain]
@@ -309,7 +308,7 @@ export class OdooModelClient {
         args: [
           config.database,
           this.auth.getUserId(),
-          config.password,
+          config.apiKey,
           this.modelName,
           'fields_get',
           [],
@@ -342,7 +341,7 @@ export class OdooModelClient {
         args: [
           config.database,
           this.auth.getUserId(),
-          config.password,
+          config.apiKey,
           this.modelName,
           method,
           args,

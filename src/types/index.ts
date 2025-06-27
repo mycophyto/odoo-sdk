@@ -2,7 +2,7 @@ export interface OdooConfig {
   url: string;
   database: string;
   username: string;
-  password: string;
+  apiKey: string;
   timeout?: number;
 }
 

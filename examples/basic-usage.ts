@@ -1,64 +1,51 @@
-import { OdooClient } from '../src';
+import { getOdooModelsClient, getOdooUid, xmlrpcCall } from '../src';
 
-async function basicExample() {
-  const client = new OdooClient({
-    url: 'https://demo.odoo.com',
-    database: 'demo',
-    username: 'demo',
-    password: 'demo'
-  });
+// Example configuration using environment variables
+const config = {
+  url: process.env.ODOO_URL || 'http://localhost:8069',
+  database: process.env.ODOO_DB || 'odoo',
+  username: process.env.ODOO_USERNAME || 'admin',
+  apiKey: process.env.ODOO_API_KEY || 'your-api-key',
+  timeout: 30000
+};
 
+async function basicUsage() {
   try {
-    // Connect to Odoo
-    console.log('Connecting to Odoo...');
-    const authResult = await client.connect();
-    
-    if (!authResult.success) {
-      console.error('Authentication failed:', authResult.error);
-      return;
-    }
-    
-    console.log('Connected successfully! User ID:', authResult.data);
+    // Get user ID (authenticate)
+    const uid = await getOdooUid(config);
+    console.log('Authenticated with UID:', uid);
 
-    // Get version info
-    const version = await client.getVersion();
-    console.log('Odoo version:', version.data);
+    // Get models client
+    const modelsClient = getOdooModelsClient(config);
 
-    // Work with partners
-    const partners = client.model('res.partner');
+    // Example: Get version info
+    const version = await xmlrpcCall(modelsClient, 'common.version', []);
+    console.log('Odoo version:', version);
 
-    // Create a new partner
-    console.log('Creating new partner...');
-    const newPartner = await partners.create({
-      name: 'Test Partner',
-      email: 'test@example.com',
-      phone: '+1-555-0123',
-      is_company: false
-    });
+    // Example: Search for partners
+    const partnerIds = await xmlrpcCall<number[]>(modelsClient, 'execute_kw', [
+      config.database,
+      uid,
+      config.apiKey,
+      'res.partner',
+      'search',
+      [[]],
+      { limit: 5 }
+    ]);
+    console.log('Partner IDs:', partnerIds);
 
-    if (newPartner.success) {
-      console.log('Partner created with ID:', newPartner.data?.id);
-      
-      // Read the created partner
-      const partner = await partners.read([newPartner.data!.id], ['name', 'email', 'phone']);
-      console.log('Partner details:', partner.data);
-
-      // Update the partner
-      await partners.update([newPartner.data!.id], {
-        phone: '+1-555-9999'
-      });
-      console.log('Partner updated');
-
-      // Search for partners
-      const searchResults = await partners.searchRead([
-        { field: 'name', operator: 'ilike', value: 'Test' }
-      ], ['name', 'email', 'phone']);
-      
-      console.log('Search results:', searchResults.data);
-
-      // Clean up - delete the test partner
-      await partners.delete([newPartner.data!.id]);
-      console.log('Test partner deleted');
+    // Example: Read partner data
+    if (partnerIds.length > 0) {
+      const partners = await xmlrpcCall(modelsClient, 'execute_kw', [
+        config.database,
+        uid,
+        config.apiKey,
+        'res.partner',
+        'read',
+        [partnerIds],
+        { fields: ['name', 'email'] }
+      ]);
+      console.log('Partners:', partners);
     }
 
   } catch (error) {
@@ -67,4 +54,6 @@ async function basicExample() {
 }
 
 // Run the example
-basicExample();
+if (require.main === module) {
+  basicUsage();
+}
